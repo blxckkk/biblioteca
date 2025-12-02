@@ -1,0 +1,93 @@
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Objects;
+
+public class Livro implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String isbn;
+    private String titulo;
+    private String editora;
+    private int anoPublicacao;
+    private ArrayList<Autor> autores;
+    
+    public Livro(String isbn, String titulo, String editora, int anoPublicacao) {
+        this.isbn = isbn;
+        this.titulo = titulo;
+        this.editora = editora;
+        this.anoPublicacao = anoPublicacao;
+        this.autores = new ArrayList<>();
+    }
+    
+    public String getIsbn() {
+        return isbn;
+    }
+    
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+    
+    public String getTitulo() {
+        return titulo;
+    }
+    
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+    
+    public String getEditora() {
+        return editora;
+    }
+    
+    public void setEditora(String editora) {
+        this.editora = editora;
+    }
+    
+    public int getAnoPublicacao() {
+        return anoPublicacao;
+    }
+    
+    public void setAnoPublicacao(int anoPublicacao) {
+        this.anoPublicacao = anoPublicacao;
+    }
+    
+    public ArrayList<Autor> getAutores() {
+        return autores;
+    }
+    
+    public void adicionarAutor(Autor autor) {
+        if (!autores.contains(autor)) {
+            autores.add(autor);
+        }
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Livro livro = (Livro) o;
+        return Objects.equals(isbn, livro.isbn);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(isbn);
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ISBN: ").append(isbn)
+          .append(" | Título: ").append(titulo)
+          .append(" | Editora: ").append(editora)
+          .append(" | Ano: ").append(anoPublicacao);
+        
+        if (!autores.isEmpty()) {
+            sb.append("\n  Autores:");
+            for (Autor a : autores) {
+                sb.append("\n    - ").append(a.getNome());
+            }
+        }
+        return sb.toString();
+    }
+}
