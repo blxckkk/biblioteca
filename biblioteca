@@ -1,0 +1,105 @@
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+public class Biblioteca implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final String ARQUIVO_DADOS = "biblioteca.dat";
+    
+    private ArrayList<Livro> livros;
+    private Set<String> isbnsRegistrados;
+    private Set<String> cpfsAutores;
+    
+    public Biblioteca() {
+        this.livros = new ArrayList<>();
+        this.isbnsRegistrados = new HashSet<>();
+        this.cpfsAutores = new HashSet<>();
+    }
+    
+    public boolean adicionarLivro(Livro livro) {
+        if (isbnsRegistrados.contains(livro.getIsbn())) {
+            return false;
+        }
+        livros.add(livro);
+        isbnsRegistrados.add(livro.getIsbn());
+        
+        for (Autor autor : livro.getAutores()) {
+            cpfsAutores.add(autor.getCpf());
+        }
+        return true;
+    }
+    
+    public boolean cpfJaCadastrado(String cpf) {
+        return cpfsAutores.contains(cpf);
+    }
+    
+    public void registrarCpfAutor(String cpf) {
+        cpfsAutores.add(cpf);
+    }
+    
+    public ArrayList<Livro> getLivros() {
+        return livros;
+    }
+    
+    public Livro buscarPorIsbn(String isbn) {
+        for (Livro livro : livros) {
+            if (livro.getIsbn().equalsIgnoreCase(isbn)) {
+                return livro;
+            }
+        }
+        return null;
+    }
+    
+    public ArrayList<Livro> buscarPorTitulo(String titulo) {
+        ArrayList<Livro> resultado = new ArrayList<>();
+        for (Livro livro : livros) {
+            if (livro.getTitulo().toLowerCase().contains(titulo.toLowerCase())) {
+                resultado.add(livro);
+            }
+        }
+        return resultado;
+    }
+    
+    public void salvarDados() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(ARQUIVO_DADOS))) {
+            oos.writeObject(this);
+            System.out.println("\n>>> Dados salvos com sucesso!");
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar dados: " + e.getMessage());
+        }
+    }
+    
+    public static Biblioteca carregarDados() {
+        File arquivo = new File(ARQUIVO_DADOS);
+        if (!arquivo.exists()) {
+            return new Biblioteca();
+        }
+        
+        try (ObjectInputStream ois = new ObjectInputStream(
+                new FileInputStream(ARQUIVO_DADOS))) {
+            Biblioteca bib = (Biblioteca) ois.readObject();
+            System.out.println(">>> Dados carregados com sucesso!");
+            return bib;
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erro ao carregar dados: " + e.getMessage());
+            return new Biblioteca();
+        }
+    }
+    
+    public void listarTodos() {
+        if (livros.isEmpty()) {
+            System.out.println("\nNenhum livro cadastrado.");
+            return;
+        }
+        
+        System.out.println("\n========== LIVROS CADASTRADOS ==========");
+        for (int i = 0; i < livros.size(); i++) {
+            System.out.println("\n[" + (i + 1) + "]");
+            System.out.println(livros.get(i));
+        }
+        System.out.println("\n========================================");
+    }
+}
