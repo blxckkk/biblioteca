@@ -1,0 +1,200 @@
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class SistemaBiblioteca {
+    private static Biblioteca biblioteca;
+    private static Scanner scanner;
+    
+    public static void main(String[] args) {
+        configurarEncoding();
+        scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
+        biblioteca = Biblioteca.carregarDados();
+        
+        exibirBoasVindas();
+        
+        boolean continuar = true;
+        while (continuar) {
+            exibirMenu();
+            int opcao = lerOpcao();
+            
+            switch (opcao) {
+                case 1:
+                    cadastrarLivro();
+                    break;
+                case 2:
+                    listarLivros();
+                    break;
+                case 3:
+                    pesquisarLivro();
+                    break;
+                case 4:
+                    salvarDados();
+                    break;
+                case 5:
+                    continuar = false;
+                    System.out.println("\nEncerrando o sistema...");
+                    salvarDados();
+                    break;
+                default:
+                    System.out.println("\nOpção inválida! Tente novamente.");
+            }
+        }
+        
+        scanner.close();
+    }
+    
+    private static void configurarEncoding() {
+        try {
+            System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("Erro ao configurar encoding: " + e.getMessage());
+        }
+    }
+    
+    private static void exibirBoasVindas() {
+        System.out.println("\n╔══════════════════════════════════════════╗");
+        System.out.println("║   SISTEMA DE GERENCIAMENTO DE BIBLIOTECA   ║");
+        System.out.println("╚══════════════════════════════════════════╝");
+    }
+    
+    private static void exibirMenu() {
+        System.out.println("\n┌─────────────────────────────┐");
+        System.out.println("│         MENU PRINCIPAL         │");
+        System.out.println("├─────────────────────────────┤");
+        System.out.println("│ 1. Cadastrar novo livro        │");
+        System.out.println("│ 2. Listar todos os livros      │");
+        System.out.println("│ 3. Pesquisar livro             │");
+        System.out.println("│ 4. Salvar dados                │");
+        System.out.println("│ 5. Sair                        │");
+        System.out.println("└─────────────────────────────┘");
+        System.out.print("\nEscolha uma opção: ");
+    }
+    
+    private static int lerOpcao() {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+    
+    private static void cadastrarLivro() {
+        System.out.println("\n--- CADASTRO DE NOVO LIVRO ---");
+        
+        System.out.print("ISBN: ");
+        String isbn = scanner.nextLine().trim();
+        
+        if (biblioteca.buscarPorIsbn(isbn) != null) {
+            System.out.println("\n[ERRO] Já existe um livro cadastrado com este ISBN!");
+            return;
+        }
+        
+        System.out.print("Título: ");
+        String titulo = scanner.nextLine().trim();
+        
+        System.out.print("Editora: ");
+        String editora = scanner.nextLine().trim();
+        
+        System.out.print("Ano de publicação: ");
+        int ano = lerAno();
+        
+        Livro novoLivro = new Livro(isbn, titulo, editora, ano);
+        
+        System.out.print("\nQuantos autores deseja cadastrar? ");
+        int qtdAutores = lerOpcao();
+        
+        for (int i = 0; i < qtdAutores; i++) {
+            System.out.println("\n-- Autor " + (i + 1) + " --");
+            Autor autor = cadastrarAutor();
+            if (autor != null) {
+                novoLivro.adicionarAutor(autor);
+            }
+        }
+        
+        if (biblioteca.adicionarLivro(novoLivro)) {
+            System.out.println("\n[SUCESSO] Livro cadastrado com sucesso!");
+        } else {
+            System.out.println("\n[ERRO] Não foi possível cadastrar o livro.");
+        }
+    }
+    
+    private static Autor cadastrarAutor() {
+        System.out.print("CPF do autor: ");
+        String cpf = scanner.nextLine().trim();
+        
+        if (biblioteca.cpfJaCadastrado(cpf)) {
+            System.out.println("[AVISO] Este CPF já foi cadastrado anteriormente.");
+        }
+        
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine().trim();
+        
+        System.out.print("Nacionalidade: ");
+        String nacionalidade = scanner.nextLine().trim();
+        
+        System.out.print("Ano de nascimento: ");
+        int anoNasc = lerAno();
+        
+        Autor autor = new Autor(cpf, nome, nacionalidade, anoNasc);
+        biblioteca.registrarCpfAutor(cpf);
+        
+        return autor;
+    }
+    
+    private static int lerAno() {
+        while (true) {
+            try {
+                return Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.print("Valor inválido! Digite novamente: ");
+            }
+        }
+    }
+    
+    private static void listarLivros() {
+        biblioteca.listarTodos();
+    }
+    
+    private static void pesquisarLivro() {
+        System.out.println("\n--- PESQUISAR LIVRO ---");
+        System.out.println("1. Pesquisar por ISBN");
+        System.out.println("2. Pesquisar por título");
+        System.out.print("\nEscolha: ");
+        
+        int opcao = lerOpcao();
+        
+        if (opcao == 1) {
+            System.out.print("\nDigite o ISBN: ");
+            String isbn = scanner.nextLine().trim();
+            Livro livro = biblioteca.buscarPorIsbn(isbn);
+            
+            if (livro != null) {
+                System.out.println("\n[ENCONTRADO]");
+                System.out.println(livro);
+            } else {
+                System.out.println("\nLivro não encontrado.");
+            }
+        } else if (opcao == 2) {
+            System.out.print("\nDigite parte do título: ");
+            String titulo = scanner.nextLine().trim();
+            ArrayList<Livro> resultados = biblioteca.buscarPorTitulo(titulo);
+            
+            if (resultados.isEmpty()) {
+                System.out.println("\nNenhum livro encontrado.");
+            } else {
+                System.out.println("\n[" + resultados.size() + " RESULTADO(S) ENCONTRADO(S)]");
+                for (Livro l : resultados) {
+                    System.out.println("\n" + l);
+                }
+            }
+        } else {
+            System.out.println("\nOpção inválida!");
+        }
+    }
+    
+    private static void salvarDados() {
+        biblioteca.salvarDados();
+    }
+}
