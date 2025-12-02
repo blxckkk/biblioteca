@@ -1,0 +1,39 @@
+# RELATÓRIO DO SISTEMA DE BIBLIOTECA
+
+## Onde foi usado ArrayList
+
+O **ArrayList** foi implementado em dois locais principais do sistema:
+
+1. **Classe Livro** - atributo `autores` (linha 10): armazena múltiplos autores para cada livro, permitindo relacionamento 1:N entre Livro e Autor. A escolha do ArrayList se deve à necessidade de manter a ordem de cadastro dos autores e permitir acesso indexado.
+
+2. **Classe Biblioteca** - atributo `livros` (linha 10): mantém todos os livros cadastrados no sistema. Utilizei ArrayList pela facilidade de iteração durante buscas e listagens, além de permitir expansão dinâmica conforme novos livros são adicionados.
+
+## Onde foi usado Set
+
+O **Set** (especificamente HashSet) foi aplicado em dois controles de duplicidade na classe Biblioteca:
+
+1. **Atributo isbnsRegistrados** (linha 11): impede o cadastro de livros com ISBN duplicado. O Set garante unicidade automática através do método `contains()` antes de adicionar novos livros.
+
+2. **Atributo cpfsAutores** (linha 12): controla CPFs de autores já cadastrados, evitando redundância de informação. Embora permita o registro do mesmo autor em múltiplos livros, o sistema alerta quando um CPF já foi utilizado.
+
+A estrutura Set foi escolhida por sua eficiência O(1) nas operações de verificação de duplicidade e por garantir unicidade dos elementos.
+
+## Onde foi aplicada Serialização
+
+A serialização foi implementada na classe **Biblioteca** através de dois métodos:
+
+1. **Método salvarDados()** (linha 50-57): utiliza ObjectOutputStream para persistir o objeto Biblioteca completo (incluindo todos os livros e autores) no arquivo "biblioteca.dat". Todas as classes envolvidas implementam a interface Serializable.
+
+2. **Método carregarDados()** (linha 59-73): recupera os dados salvos utilizando ObjectInputStream, permitindo continuidade entre execuções do programa. Inclui tratamento para inicializar biblioteca vazia caso o arquivo não exista.
+
+## Como foi tratado o Encoding/Charset
+
+O tratamento de caracteres especiais foi implementado em três níveis:
+
+1. **Configuração do System.out** (método configurarEncoding, linhas 33-39 da classe SistemaBiblioteca): força a saída do console para UTF-8, garantindo exibição correta de acentos.
+
+2. **Inicialização do Scanner** (linha 30): especifica explicitamente UTF-8 na leitura de dados do usuário através de `StandardCharsets.UTF_8.name()`.
+
+3. **Import de StandardCharsets** (linha 3): utiliza a classe padrão do Java para evitar hardcoded strings de charset, tornando o código mais robusto.
+
+Essa abordagem tripla garante que caracteres como ç, ã, é, ô sejam corretamente processados tanto na entrada quanto na saída de dados, evitando problemas comuns em sistemas que lidam com português brasileiro.
